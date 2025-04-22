@@ -16,8 +16,10 @@ https://aniket886.github.io/system-info-terminal/
 
 ### Signature
 
-ANIKET TEGGINAMATH  
-Cybercrime Investigator, CEH, Darkweb Researcher
+🛡️ Built by:
+
+𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇
+Cybercrime Investigator | CEH | Darkweb Researcher | TryHackMe Top 2
 
 ---
 
@@ -110,7 +112,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Signature
 
-ANIKET TEGGINAMATH  
-Cybercrime Investigator, CEH, Darkweb Researcher
+🛡️ Built by:
+
+𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇
+Cybercrime Investigator | CEH | Darkweb Researcher | TryHackMe Top 2
 
 ---
