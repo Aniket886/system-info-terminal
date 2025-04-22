@@ -1,68 +1,64 @@
+// ============================
+//  index.js  (API‑only server)
+// ============================
+
 require('dotenv').config();
 
-const express = require('express');
-const fetch = require('node-fetch');
+const express   = require('express');
+const fetch     = require('node-fetch');
 const rateLimit = require('express-rate-limit');
-const cors = require('cors');
-const path = require('path');
+const cors      = require('cors');
 
-const app = express();
-const port = 3000;
+const app  = express();
+const port = process.env.PORT || 3000;
 
-// Middleware
+/* ─────────── middleware ─────────── */
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Rate Limiting
-const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  message: 'Too many requests from this IP, please try again after a minute',
-});
-app.use(limiter);
+app.use(rateLimit({
+  windowMs : 60 * 1000,          // 1 minute
+  max      : 5,                  // 5 requests/IP/min
+  message  : 'Too many requests, try again later.'
+}));
 
-// Serve index.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Handle Telegram POST
+/* ─────────── POST /send-message ───────────
+     Body: { "message": "..." }
+   ---------------------------------------- */
 app.post('/send-message', async (req, res) => {
-  const message = req.body.message;
-
-  if (!message || message.trim().length === 0) {
-    return res.status(400).json({ success: false, error: 'Message cannot be empty' });
+  const { message } = req.body;
+  if (!message || !message.trim()) {
+    return res.status(400).json({ success:false, error:'Message cannot be empty' });
   }
 
-  const telegramUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
-
-  const payload = {
-    chat_id: process.env.TELEGRAM_CHAT_ID,
-    text: message,
-  };
+  const tgURL = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
 
   try {
-    const response = await fetch(telegramUrl, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const tgRes = await fetch(tgURL, {
+      method : 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body   : JSON.stringify({
+        chat_id: process.env.TELEGRAM_CHAT_ID,
+        text   : message
+      })
+    }).then(r => r.json());
 
-    const data = await response.json();
-    if (data.ok) {
-      res.json({ success: true });
-    } else {
-      res.status(400).json({ success: false, error: data.description });
-    }
-  } catch (error) {
-    console.error('Error sending message:', error);
-    res.status(500).json({ success: false, error: 'Telegram error, try again later.' });
+    tgRes.ok
+      ? res.json({ success:true })
+      : res.status(400).json({ success:false, error:tgRes.description });
+
+  } catch (err) {
+    console.error('Telegram error:', err);
+    res.status(500).json({ success:false, error:'Telegram request failed' });
   }
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Server running at http://localhost:${port}`);
-});
+/* ─────────── simple root check ─────────── */
+app.get('/', (_, res) =>
+  res.send('System‑Info API running. POST /send-message to forward data.')
+);
+
+/* ─────────── start server ─────────── */
+app.listen(port, () =>
+  console.log(`🚀  API listening on port ${port}`)
+);
