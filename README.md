@@ -98,5 +98,3 @@ ANIKET TEGGINAMATH
 Cybercrime Investigator, CEH, Darkweb Researcher
 
 ---
-
-You can copy this content into your `README.md` file.
