@@ -12,8 +12,9 @@
 ⡿⠟⠛⠉⠉⠀⠀⠀⠀⠀⠀⠀⠈⢻⣿⡀⠀⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠁⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 https://linktr.ee/D4RKMATRIX    
-https://aniket886.github.io/system-info-terminal/                                
-https://youtu.be/RjVSFTv51Fc
+https://aniket886.github.io/system-info-terminal/  
+
+**Youtube Video Explain:** https://youtu.be/RjVSFTv51Fc
 
 ### Signature
 
