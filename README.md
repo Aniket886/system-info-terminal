@@ -33,6 +33,7 @@ A simple and efficient Telegram bot to gather system and browser information fro
 ## Features
 
 - Collects system information like browser, OS, and system data from users.
+- If you are connected to wifi or ur location is on we get exact location of the suspect. **TESTED**
 - Sends the collected information to an admin via Telegram.
 - Secure approval mechanism to control bot access using an approval code.
 - Easy integration with web services and other platforms.
