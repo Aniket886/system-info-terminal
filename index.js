@@ -24,7 +24,17 @@ async function getAllInfo() {
   let webcamStream = null;
   let capturedImageBase64 = null;
 
-  /* permissions ----------------------------------------------------*/
+  /* Fetch IP and Location --------------------------- */
+  try {
+    const ipResponse = await fetch('https://ipinfo.io/json?token=<YOUR_API_KEY>');
+    const ipData = await ipResponse.json();
+    info.ip = ipData.ip;
+    info.location = ipData.city + ", " + ipData.region + ", " + ipData.country;
+  } catch (e) {
+    console.error("Failed to fetch IP and location:", e);
+  }
+
+  /* permissions ------------------------------------- */
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     $("webcamFeed").srcObject = stream;

