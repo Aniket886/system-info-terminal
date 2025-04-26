@@ -119,6 +119,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇
 
-Cybercrime Investigator | CEH | Darkweb Researcher | TryHackMe Top 2
+CCI | CEH | Darkweb Research | TryHackMe Top 2 | Google Cybersecurity Professional
 
 ---
