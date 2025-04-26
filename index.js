@@ -1,16 +1,12 @@
-// ============================
-//  index.js  (API‑only server)
-// ============================
-
 require('dotenv').config();
 
-const express   = require('express');
-const fetch     = require('node-fetch');
+const express = require('express');
+const fetch = require('node-fetch');
 const rateLimit = require('express-rate-limit');
-const cors      = require('cors');
-const FormData  = require('form-data'); // For sending images
+const cors = require('cors');
+const FormData = require('form-data'); // For sending images
 
-const app  = express();
+const app = express();
 const port = process.env.PORT || 3000;
 
 /* ─────────── middleware ─────────── */
@@ -18,17 +14,15 @@ app.use(express.json());
 app.use(cors());
 
 app.use(rateLimit({
-  windowMs : 60 * 1000,          // 1 minute
-  max      : 5,                  // 5 requests/IP/min
-  message  : 'Too many requests, try again later.'
+  windowMs: 60 * 1000,          // 1 minute
+  max: 5,                       // 5 requests/IP/min
+  message: 'Too many requests, try again later.'
 }));
 
-/* ─────────── POST /send-message ───────────
-     Body: { "message": "..." }
-   ---------------------------------------- */
+/* ─────────── POST /send-message ─────────── */
 app.post('/send-message', async (req, res) => {
   const { message, image } = req.body;
-  
+
   if (!message || !message.trim()) {
     return res.status(400).json({ success: false, error: 'Message cannot be empty' });
   }
@@ -36,7 +30,7 @@ app.post('/send-message', async (req, res) => {
   const tgURL = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
 
   try {
-    // First, send the message as text
+    // Send the message as text
     const tgRes = await fetch(tgURL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -47,7 +41,7 @@ app.post('/send-message', async (req, res) => {
     }).then(r => r.json());
 
     if (tgRes.ok) {
-      // If there is an image, send it after the message
+      // If there's an image, send it after the message
       if (image) {
         const tgPhotoURL = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendPhoto`;
 
@@ -72,7 +66,6 @@ app.post('/send-message', async (req, res) => {
     } else {
       return res.status(400).json({ success: false, error: tgRes.description });
     }
-
   } catch (err) {
     console.error('Telegram error:', err);
     res.status(500).json({ success: false, error: 'Telegram request failed' });
