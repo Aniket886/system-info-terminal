@@ -21,8 +21,7 @@ https://aniket886.github.io/system-info-terminal/
 🛡️ Built by:
 
 𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇
-
-Cybercrime Investigator | CEH | Darkweb Researcher | TryHackMe Top 2
+CCI | CEH | Darkweb Research | TryHackMe Top 2 | Google Cybersecurity Professional
 
 ---
 
