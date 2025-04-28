@@ -22,7 +22,7 @@ https://aniket886.github.io/system-info-terminal/
 
 𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇
 
-CCI | CEH | Darkweb Research | TryHackMe Top 2 | Google Cybersecurity Professional
+CyberCrime Investigation | CEH | Darkweb Research | TryHackMe Top 2 | Google Cybersecurity Professional
 
 ---
 
