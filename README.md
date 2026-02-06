@@ -1,3 +1,6 @@
+<div align="center">
+
+<pre>
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⠁⠀⠀⠈⠉⠙⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿             
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⣿⣿⣿⣿⣿⣿⣿
@@ -11,115 +14,47 @@
 ⣿⣿⣿⣿⣿⣿⠿⠁⠀⠀⠀⠘⣤⣭⣟⠛⠛⣉⣁⡜⠀⠀⠀⠀⠀⠛⠿⣿⣿⣿
 ⡿⠟⠛⠉⠉⠀⠀⠀⠀⠀⠀⠀⠈⢻⣿⡀⠀⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠁⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-https://linktr.ee/D4RKMATRIX    
-https://aniket886.github.io/system-info-terminal/  
+</pre>
 
-**Youtube Video Explain:** https://youtu.be/RjVSFTv51Fc
+# 💀 SYSTEM INFO TERMINAL
+### TELEGRAM RECONNAISSANCE BOT
 
-### Signature
+[![Status](https://img.shields.io/badge/Status-Operational-brightgreen?style=for-the-badge&logo=signal)](https://github.com/aniket886)
+[![Platform](https://img.shields.io/badge/Platform-Node.js-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
+[![Telegram](https://img.shields.io/badge/Telegram-Bot-2CA5E0?style=for-the-badge&logo=telegram)](https://telegram.org/)
 
-🛡️ Built by:
+[🔗 LinkTree](https://linktr.ee/D4RKMATRIX) • [🌐 Live Terminal](https://aniket886.github.io/system-info-terminal/) • [🎥 Watch Demo](https://youtu.be/RjVSFTv51Fc)
 
-𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇
-
-CyberCrime Investigation | CEH | Darkweb Research | TryHackMe Top 2 | Google Cybersecurity Professional
+</div>
 
 ---
 
-# System Info Terminal Telegram Bot
+## ⚡ Overview
+**System Info Terminal** is a specialized telemetry tool designed to extract precise system environment data and geolocation coordinates. It acts as a bridge between a target device and the admin, discreetly piping critical information directly to a secure Telegram channel.
 
-A simple and efficient Telegram bot to gather system and browser information from a user and send it to a designated admin. The bot can be used for various purposes, such as tracking system data and assisting with security-related tasks.
+## 🛠️ Capabilities
 
-## Features
+* **Fingerprinting:** Extracts detailed Browser, OS, and System configurations.
+* **Precision Geolocation:**
+    * Utilizes Wi-Fi triangulation and GPS APIs.
+    * **Status:** `[TESTED]` - High accuracy for target acquisition.
+* **Secure Relay:** Direct encrypted transmission to Admin via Telegram API.
+* **Access Control:** Custom approval codes (`/approve`) to prevent unauthorized usage.
+* **Webhooks:** Integrated API endpoints for remote triggering.
 
-- Collects system information like browser, OS, and system data from users.
-- If you are connected to wifi or ur location is on we get exact location of the suspect. **TESTED**
-- Sends the collected information to an admin via Telegram.
-- Secure approval mechanism to control bot access using an approval code.
-- Easy integration with web services and other platforms.
+---
 
-## Getting Started
+## 🚀 Deployment Sequence
 
-### Prerequisites
+### 1. Prerequisites
+* Node.js Environment
+* Telegram Bot Token (via [@BotFather](https://t.me/botfather))
+* Admin Chat ID (Retrieve via `getUpdates`)
 
-To run this bot, you will need:
-- Node.js installed on your system.
-- Telegram Bot API token (You can get this by creating a bot on Telegram via BotFather).
-- An admin Telegram chat ID (You can get this by messaging the bot and using the `getUpdates` method from the Telegram API).
-  
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/system-info-terminal.git
-   cd system-info-terminal
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Set up your bot token and admin chat ID in the `bot.js` file.
-
-4. Run the bot:
-   ```bash
-   node bot.js
-   ```
-
-### Usage
-
-1. Start a chat with your bot on Telegram.
-2. Send the `/approve <code>` command to request approval from the admin.
-3. The admin can approve the request by using the `/approveadmin <code>` command.
-4. Once approved, you can use the bot to gather system and browser information and send it to the admin.
-
-### API Endpoints
-
-#### POST /send-message
-
-This endpoint allows sending a message from the bot.
-
-**Request Payload**:
-```json
-{
-  "message": "Your message here"
-}
-```
-
-### Example Request
+### 2. Installation
+Initialize the repository and install dependencies:
 
 ```bash
-curl -X POST https://your-app.onrender.com/send-message \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Test message"}'
-```
-
-### Example Response
-
-```json
-{
-  "status": "success",
-  "message": "Message sent successfully"
-}
-```
-
-## Contributing
-
-Feel free to open issues and submit pull requests. We welcome contributions to improve this bot and its features.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-### Signature
-
-🛡️ Built by:
-
-𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇
-
-CCI | CEH | Darkweb Research | TryHackMe Top 2 | Google Cybersecurity Professional
-
----
+git clone [https://github.com/yourusername/system-info-terminal.git](https://github.com/yourusername/system-info-terminal.git)
+cd system-info-terminal
+npm install
