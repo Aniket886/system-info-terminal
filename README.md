@@ -96,11 +96,13 @@ curl -X POST [https://your-app.onrender.com/send-message](https://your-app.onren
 This tool is designed for educational purposes and authorized security testing only. The developer is not responsible for misuse.
 
 <div align="center">
+   
 🛡️ Architect
 𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇
 
 CyberCrime Investigation | CEH | Darkweb Research
 TryHackMe Top 2 | Google Cybersecurity Professional
+
 </div>
 
 
