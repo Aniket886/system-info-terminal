@@ -58,3 +58,11 @@ Initialize the repository and install dependencies:
 git clone [https://github.com/yourusername/system-info-terminal.git](https://github.com/yourusername/system-info-terminal.git)
 cd system-info-terminal
 npm install
+3. Configuration & LaunchEdit bot.js to inject your credentials, then execute:Bashnode bot.js
+🎮 Command InterfaceCommandDescription/startInitialize the handshake protocol./approve <code>Request access permission./approveadmin <code>(Admin) Grant access to the user.📡 API UplinkEndpoint: POST /send-messageInject messages remotely using the bot network.Payload:JSON{
+  "message": "System compromised."
+}
+CURL Example:Bashcurl -X POST [https://your-app.onrender.com/send-message](https://your-app.onrender.com/send-message) \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Test payload delivered"}'
+⚠️ DisclaimerThis tool is designed for educational purposes and authorized security testing only. The developer is not responsible for misuse.<div align="center">🛡️ Architect𝐀𝐍𝐈𝐊𝐄𝐓 𝐓𝐄𝐆𝐆𝐈𝐍𝐀𝐌𝐀𝐓𝐇CyberCrime Investigation | CEH | Darkweb ResearchTryHackMe Top 2 | Google Cybersecurity Professional</div>
